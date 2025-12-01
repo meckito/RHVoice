@@ -8,7 +8,6 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -31,7 +30,8 @@ final class LocalAddonStore {
         final File file = getFile(context);
         if (!file.exists())
             return new ArrayList<>();
-        JsonAdapter<List<LanguageResource>> adapter = moshi.adapter(LIST_TYPE).lenient().nonNull();
+        @SuppressWarnings("unchecked")
+        JsonAdapter<List<LanguageResource>> adapter = (JsonAdapter<List<LanguageResource>>) moshi.adapter(LIST_TYPE).lenient().nonNull();
         try (okio.BufferedSource source = okio.Okio.buffer(okio.Okio.source(file))) {
             List<LanguageResource> langs = adapter.fromJson(source);
             if (langs == null)
@@ -57,11 +57,12 @@ final class LocalAddonStore {
         }
         lang.index();
         langs.add(lang);
-        JsonAdapter<List<LanguageResource>> adapter = moshi.adapter(LIST_TYPE).lenient().nonNull();
+        @SuppressWarnings("unchecked")
+        JsonAdapter<List<LanguageResource>> adapter = (JsonAdapter<List<LanguageResource>>) moshi.adapter(LIST_TYPE).lenient().nonNull();
         final File file = getFile(context);
         file.getParentFile().mkdirs();
-        try (FileWriter writer = new FileWriter(file)) {
-            adapter.toJson(writer, langs);
+        try (okio.BufferedSink sink = okio.Okio.buffer(okio.Okio.sink(file))) {
+            adapter.toJson(sink, langs);
         } catch (IOException e) {
             if (BuildConfig.DEBUG)
                 Log.w(TAG, "Failed to save local addons", e);
