@@ -30,8 +30,10 @@ final class LocalAddonStore {
         final File file = getFile(context);
         if (!file.exists())
             return new ArrayList<>();
+        JsonAdapter<?> rawAdapter = moshi.adapter(LIST_TYPE);
         @SuppressWarnings("unchecked")
-        JsonAdapter<List<LanguageResource>> adapter = (JsonAdapter<List<LanguageResource>>) moshi.adapter(LIST_TYPE).lenient().nonNull();
+        JsonAdapter<List<LanguageResource>> adapter = (JsonAdapter<List<LanguageResource>>) rawAdapter;
+        adapter = adapter.lenient().nonNull();
         try (okio.BufferedSource source = okio.Okio.buffer(okio.Okio.source(file))) {
             List<LanguageResource> langs = adapter.fromJson(source);
             if (langs == null)
@@ -57,8 +59,10 @@ final class LocalAddonStore {
         }
         lang.index();
         langs.add(lang);
+        JsonAdapter<?> rawAdapter = moshi.adapter(LIST_TYPE);
         @SuppressWarnings("unchecked")
-        JsonAdapter<List<LanguageResource>> adapter = (JsonAdapter<List<LanguageResource>>) moshi.adapter(LIST_TYPE).lenient().nonNull();
+        JsonAdapter<List<LanguageResource>> adapter = (JsonAdapter<List<LanguageResource>>) rawAdapter;
+        adapter = adapter.lenient().nonNull();
         final File file = getFile(context);
         file.getParentFile().mkdirs();
         try (okio.BufferedSink sink = okio.Okio.buffer(okio.Okio.sink(file))) {
