@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:sharedUserId="com.github.olga_yakovleva.rhvoice"
+      android:sharedUserId="com.github.olga_yakovleva.rhvoice.custom"
       android:sharedUserLabel="@string/app_name">
   <uses-permission
       android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -65,7 +65,25 @@
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
     </activity>
+    <activity
+        android:name=".NvdaAddonImportActivity"
+        android:label="@string/app_name"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <action android:name="android.intent.action.SEND"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:scheme="content"/>
+        <data android:scheme="file"/>
+        <data android:mimeType="application/zip"/>
+        <data android:mimeType="application/x-zip-compressed"/>
+        <data android:mimeType="*/*"/>
+        <data android:pathPattern=".*\\.nvda-addon"/>
+      </intent-filter>
+    </activity>
     <service android:name=".ImportConfigService"
+             android:exported="false"/>
+    <service android:name=".NvdaAddonImportService"
              android:exported="false"/>
   </application>
 </manifest>

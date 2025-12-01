@@ -42,6 +42,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -115,7 +117,10 @@ final class Repository {
         if (str == null)
             return false;
         final PackageDirectory dir = jsonAdapter.fromJson(str);
+        if (dir == null)
+            return false;
         dir.nextUpdateTime = Instant.now().plusSeconds(dir.localTtl);
+        attachLocalAddons(dir);
         dir.index();
         pkgDir = dir;
         pkgDirLiveData.postValue(dir);
@@ -193,6 +198,19 @@ final class Repository {
         ExistingPeriodicWorkPolicy policy = newTtl == oldTtl ? ExistingPeriodicWorkPolicy.KEEP : ExistingPeriodicWorkPolicy.REPLACE;
         WorkManager.getInstance(context).enqueueUniquePeriodicWork("dir.packages.rhvoice.org", policy, request);
         prefs.edit().putLong("ttl", newTtl).commit();
+    }
+
+    private void attachLocalAddons(PackageDirectory dir) {
+        List<LanguageResource> local = LocalAddonStore.load(context, moshi);
+        if (local.isEmpty())
+            return;
+        List<LanguageResource> merged = new ArrayList<>(dir.languages);
+        for (LanguageResource lr : local) {
+            boolean exists = merged.stream().anyMatch(l -> l.lang3code.equalsIgnoreCase(lr.lang3code));
+            if (!exists)
+                merged.add(lr);
+        }
+        dir.languages = merged;
     }
 
     private void initCerts() {
